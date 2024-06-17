@@ -21,6 +21,7 @@ __global__ void project_gaussians_backward_kernel(
     const float2* __restrict__ v_xy,
     const float* __restrict__ v_depth,
     const float3* __restrict__ v_conic,
+    const float* __restrict__ v_cov1d,
     const float* __restrict__ v_compensation,
     float3* __restrict__ v_cov2d,
     float* __restrict__ v_cov3d,

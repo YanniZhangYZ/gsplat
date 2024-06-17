@@ -328,6 +328,7 @@ __global__ void project_gaussians_backward_kernel(
     const float2* __restrict__ v_xy,
     const float* __restrict__ v_depth,
     const float3* __restrict__ v_conic,
+    const float* __restrict__ v_cov1d,
     const float* __restrict__ v_compensation,
     float3* __restrict__ v_cov2d,
     float* __restrict__ v_cov3d,
@@ -367,6 +368,7 @@ __global__ void project_gaussians_backward_kernel(
         fx,
         fy,
         v_cov2d[idx],
+        v_cov1d[idx],
         v_mean3d[idx],
         &(v_cov3d[6 * idx])
     );
@@ -389,6 +391,7 @@ __device__ void project_cov3d_ewa_vjp(
     const float fx,
     const float fy,
     const float3& __restrict__ v_cov2d,
+    const float* __restrict__ v_cov1d,
     float3& __restrict__ v_mean3d,
     float* __restrict__ v_cov3d
 ) {
@@ -425,7 +428,7 @@ __device__ void project_cov3d_ewa_vjp(
     glm::mat3 v_cov = glm::mat3(
         v_cov2d.x,        0.5f * v_cov2d.y, 0.f,
         0.5f * v_cov2d.y, v_cov2d.z,        0.f,
-        0.f,              0.f,              0.f
+        0.f,              0.f,              v_cov1d
     );
     // clang-format on
 

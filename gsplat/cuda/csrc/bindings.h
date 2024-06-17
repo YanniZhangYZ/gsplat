@@ -44,6 +44,7 @@ std::tuple<
     torch::Tensor,
     torch::Tensor,
     torch::Tensor,
+    torch::Tensor,
     torch::Tensor>
 project_gaussians_forward_tensor(
     const int num_points,
@@ -88,6 +89,7 @@ project_gaussians_backward_tensor(
     torch::Tensor &v_xy,
     torch::Tensor &v_depth,
     torch::Tensor &v_conic,
+    torch::Tensor &v_cov1d,
     torch::Tensor &v_compensation
 );
 

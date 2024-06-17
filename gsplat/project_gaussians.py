@@ -105,6 +105,7 @@ class _ProjectGaussians(Function):
             depths,
             radii,
             conics,
+            cov1d,
             compensation,
             num_tiles_hit,
         ) = _C.project_gaussians_forward(
@@ -143,10 +144,11 @@ class _ProjectGaussians(Function):
             cov3d,
             radii,
             conics,
+            cov1d,
             compensation,
         )
 
-        return (xys, depths, radii, conics, compensation, num_tiles_hit, cov3d)
+        return (xys, depths, radii, conics, cov1d, compensation, num_tiles_hit, cov3d)
 
     @staticmethod
     def backward(
@@ -155,6 +157,7 @@ class _ProjectGaussians(Function):
         v_depths,
         v_radii,
         v_conics,
+        v_cov1d,
         v_compensation,
         v_num_tiles_hit,
         v_cov3d,
@@ -167,6 +170,7 @@ class _ProjectGaussians(Function):
             cov3d,
             radii,
             conics,
+            cov1d,
             compensation,
         ) = ctx.saved_tensors
 
@@ -190,6 +194,7 @@ class _ProjectGaussians(Function):
             v_xys,
             v_depths,
             v_conics,
+            v_cov1d,
             v_compensation,
         )
 

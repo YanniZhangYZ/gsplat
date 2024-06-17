@@ -20,6 +20,7 @@ __global__ void project_gaussians_forward_kernel(
     float* __restrict__ depths,
     int* __restrict__ radii,
     float3* __restrict__ conics,
+    float* __restrict__ covs1d,
     float* __restrict__ compensation,
     int32_t* __restrict__ num_tiles_hit
 );

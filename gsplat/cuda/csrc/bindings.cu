@@ -126,6 +126,7 @@ std::tuple<
     torch::Tensor,
     torch::Tensor,
     torch::Tensor,
+    torch::Tensor,
     torch::Tensor>
 project_gaussians_forward_tensor(
     const int num_points,
@@ -166,6 +167,8 @@ project_gaussians_forward_tensor(
         torch::zeros({num_points}, means3d.options().dtype(torch::kInt32));
     torch::Tensor conics_d =
         torch::zeros({num_points, 3}, means3d.options().dtype(torch::kFloat32));
+    torch::Tensor cov1d_d =
+        torch::zeros({num_points}, means3d.options().dtype(torch::kFloat32));
     torch::Tensor compensation_d =
         torch::zeros({num_points}, means3d.options().dtype(torch::kFloat32));
     torch::Tensor num_tiles_hit_d =
@@ -191,12 +194,13 @@ project_gaussians_forward_tensor(
         depths_d.contiguous().data_ptr<float>(),
         radii_d.contiguous().data_ptr<int>(),
         (float3 *)conics_d.contiguous().data_ptr<float>(),
+        cov1d_d.contiguous().data_ptr<float>(),
         compensation_d.contiguous().data_ptr<float>(),
         num_tiles_hit_d.contiguous().data_ptr<int32_t>()
     );
 
     return std::make_tuple(
-        cov3d_d, xys_d, depths_d, radii_d, conics_d, compensation_d, num_tiles_hit_d
+        cov3d_d, xys_d, depths_d, radii_d, conics_d, cov1d_d, compensation_d, num_tiles_hit_d
     );
 }
 
@@ -226,6 +230,7 @@ project_gaussians_backward_tensor(
     torch::Tensor &v_xy,
     torch::Tensor &v_depth,
     torch::Tensor &v_conic,
+    torch::Tensor &v_cov1d,
     torch::Tensor &v_compensation
 ){
     DEVICE_GUARD(means3d);
@@ -267,6 +272,7 @@ project_gaussians_backward_tensor(
         (float2 *)v_xy.contiguous().data_ptr<float>(),
         v_depth.contiguous().data_ptr<float>(),
         (float3 *)v_conic.contiguous().data_ptr<float>(),
+        (float *)v_cov1d.contiguous().data_ptr<float>(),
         (float *)v_compensation.contiguous().data_ptr<float>(),
         // Outputs.
         (float3 *)v_cov2d.contiguous().data_ptr<float>(),

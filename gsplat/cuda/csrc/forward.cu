@@ -27,6 +27,7 @@ __global__ void project_gaussians_forward_kernel(
     float* __restrict__ depths,
     int* __restrict__ radii,
     float3* __restrict__ conics,
+    float* __restrict__ covs1d,
     float* __restrict__ compensation,
     int32_t* __restrict__ num_tiles_hit
 ) {
@@ -64,10 +65,11 @@ __global__ void project_gaussians_forward_kernel(
     float tan_fovx = 0.5 * img_size.x / fx;
     float tan_fovy = 0.5 * img_size.y / fy;
     float3 cov2d;
+    float cov1d;
     float comp;
     project_cov3d_ewa(
         p_world, cur_cov3d, viewmat, fx, fy, tan_fovx, tan_fovy,
-        cov2d, comp
+        cov2d, cov1d, comp
     );
     // printf("cov2d %d, %.2f %.2f %.2f\n", idx, cov2d.x, cov2d.y, cov2d.z);
 
@@ -78,6 +80,7 @@ __global__ void project_gaussians_forward_kernel(
         return; // zero determinant
     // printf("conic %d %.2f %.2f %.2f\n", idx, conic.x, conic.y, conic.z);
     conics[idx] = conic;
+    covs1d[idx] = cov1d;
 
     // compute the projected mean
     float2 center = project_pix({fx, fy}, p_view, {cx, cy});
@@ -428,6 +431,7 @@ __device__ void project_cov3d_ewa(
     const float tan_fovx,
     const float tan_fovy,
     float3 &cov2d,
+    float &cov1d,
     float &compensation
 ) {
     // clip the
@@ -493,6 +497,7 @@ __device__ void project_cov3d_ewa(
     cov2d.y = c01;
     cov2d.z = c11 + 0.3f;
     float det_blur = cov2d.x * cov2d.z - cov2d.y * cov2d.y;
+    cov1d = cov[2][2];
     compensation = std::sqrt(std::max(0.f, det_orig / det_blur));
 }
 
