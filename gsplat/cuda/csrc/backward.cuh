@@ -79,6 +79,7 @@ __device__ void project_cov3d_ewa_vjp(
     const float fx,
     const float fy,
     const float3 &v_cov2d,
+    const float &v_cov1d,
     float3 &v_mean3d,
     float *v_cov3d
 );
@@ -87,7 +88,7 @@ __device__ void scale_rot_to_cov3d_vjp(
     const float3 scale,
     const float glob_scale,
     const float4 quat,
-    const float *v_cov3d,
+    const float* v_cov3d,
     float3 &v_scale,
     float4 &v_quat
 );

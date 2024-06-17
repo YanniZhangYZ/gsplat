@@ -68,6 +68,7 @@ __device__ void project_cov3d_ewa(
     const float tan_fovx,
     const float tan_fovy,
     float3 &cov2d,
+    float &cov1d,
     float &comp
 );
 

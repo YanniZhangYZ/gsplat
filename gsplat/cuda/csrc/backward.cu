@@ -391,7 +391,7 @@ __device__ void project_cov3d_ewa_vjp(
     const float fx,
     const float fy,
     const float3& __restrict__ v_cov2d,
-    const float* __restrict__ v_cov1d,
+    const float& __restrict__ v_cov1d,
     float3& __restrict__ v_mean3d,
     float* __restrict__ v_cov3d
 ) {
