@@ -459,19 +459,34 @@ __device__ void project_cov3d_ewa(
 
     float rz = 1.f / t.z;
     float rz2 = rz * rz;
+    float l_norm = sqrt(t.x * t.x + t.y * t.y + t.z * t.z);
+    float inv_norm = 1.f / l_norm;
+    
+    // printf("CUDA %f %f %f %f\n", t.x,t.y,t.z,l_norm);
 
     // column major
     // we only care about the top 2x2 submatrix
+    // glm::mat3 J = glm::mat3(
+    //     fx * rz,
+    //     0.f,
+    //     0.f,
+    //     0.f,
+    //     fy * rz,
+    //     0.f,
+    //     -fx * t.x * rz2,
+    //     -fy * t.y * rz2,
+    //     0.f
+    // );
     glm::mat3 J = glm::mat3(
         fx * rz,
         0.f,
-        0.f,
+        t.x * inv_norm,
         0.f,
         fy * rz,
-        0.f,
+        t.y * inv_norm,
         -fx * t.x * rz2,
         -fy * t.y * rz2,
-        0.f
+        t.z * inv_norm
     );
     glm::mat3 T = J * W;
 
@@ -493,11 +508,17 @@ __device__ void project_cov3d_ewa(
     // and compute the density compensation factor due to the blurs
     float c00 = cov[0][0], c11 = cov[1][1], c01 = cov[0][1];
     float det_orig = c00 * c11 - c01 * c01;
-    cov2d.x = c00 + 0.3f;
+    // cov2d.x = c00 + 0.3f;
+    // cov2d.y = c01;
+    // cov2d.z = c11 + 0.3f;
+    cov2d.x = c00 + 5e-3;
     cov2d.y = c01;
-    cov2d.z = c11 + 0.3f;
+    cov2d.z = c11 + 5e-3;
     float det_blur = cov2d.x * cov2d.z - cov2d.y * cov2d.y;
-    cov1d = cov[2][2];
+    // cov1d = cov[2][2] + 0.3f;
+    cov1d = cov[2][2] + 5e-3;
+
+
     compensation = std::sqrt(std::max(0.f, det_orig / det_blur));
 }
 

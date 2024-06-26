@@ -408,14 +408,21 @@ __device__ void project_cov3d_ewa_vjp(
     glm::vec3 t = W * glm::vec3(mean3d.x, mean3d.y, mean3d.z) + p;
     float rz = 1.f / t.z;
     float rz2 = rz * rz;
+    float l_norm = sqrt(t.x * t.x + t.y * t.y + t.z * t.z);
+    float inv_norm = 1.f / l_norm;
 
     // column major
     // we only care about the top 2x2 submatrix
     // clang-format off
+    // glm::mat3 J = glm::mat3(
+    //     fx * rz,         0.f,             0.f,
+    //     0.f,             fy * rz,         0.f,
+    //     -fx * t.x * rz2, -fy * t.y * rz2, 0.f
+    // );
     glm::mat3 J = glm::mat3(
-        fx * rz,         0.f,             0.f,
-        0.f,             fy * rz,         0.f,
-        -fx * t.x * rz2, -fy * t.y * rz2, 0.f
+        fx * rz,         0.f,             t.x * inv_norm,
+        0.f,             fy * rz,         t.y * inv_norm,
+        -fx * t.x * rz2, -fy * t.y * rz2, t.z * inv_norm
     );
     glm::mat3 V = glm::mat3(
         cov3d[0], cov3d[1], cov3d[2],
@@ -452,11 +459,26 @@ __device__ void project_cov3d_ewa_vjp(
     // T = J * W
     glm::mat3 v_J = v_T * glm::transpose(W);
     float rz3 = rz2 * rz;
+
+    float inv_norm3 = inv_norm * inv_norm * inv_norm;
+
+    float dx_dnorm = (l_norm * l_norm -  t.x * t.x) * inv_norm3;
+    float dy_dnorm = (l_norm * l_norm -  t.y * t.y) * inv_norm3;
+    float dz_dnorm = (l_norm * l_norm -  t.z * t.z) * inv_norm3;
+
+    // glm::vec3 v_t = glm::vec3(
+    //     -fx * rz2 * v_J[2][0],
+    //     -fy * rz2 * v_J[2][1],
+    //     -fx * rz2 * v_J[0][0] + 2.f * fx * t.x * rz3 * v_J[2][0] -
+    //         fy * rz2 * v_J[1][1] + 2.f * fy * t.y * rz3 * v_J[2][1]
+    // );
+
     glm::vec3 v_t = glm::vec3(
-        -fx * rz2 * v_J[2][0],
-        -fy * rz2 * v_J[2][1],
+        -fx * rz2 * v_J[2][0] + dx_dnorm * v_J[0][2],
+        -fy * rz2 * v_J[2][1] + dy_dnorm * v_J[1][2],
         -fx * rz2 * v_J[0][0] + 2.f * fx * t.x * rz3 * v_J[2][0] -
-            fy * rz2 * v_J[1][1] + 2.f * fy * t.y * rz3 * v_J[2][1]
+            fy * rz2 * v_J[1][1] + 2.f * fy * t.y * rz3 * v_J[2][1]+
+            dz_dnorm * v_J[2][2]
     );
     // printf("v_t %.2f %.2f %.2f\n", v_t[0], v_t[1], v_t[2]);
     // printf("W %.2f %.2f %.2f\n", W[0][0], W[0][1], W[0][2]);

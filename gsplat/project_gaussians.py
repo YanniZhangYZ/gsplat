@@ -144,7 +144,6 @@ class _ProjectGaussians(Function):
             cov3d,
             radii,
             conics,
-            cov1d,
             compensation,
         )
 
@@ -170,7 +169,6 @@ class _ProjectGaussians(Function):
             cov3d,
             radii,
             conics,
-            cov1d,
             compensation,
         ) = ctx.saved_tensors
 
